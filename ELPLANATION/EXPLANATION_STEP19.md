@@ -34,7 +34,7 @@ jobs:
   backend-quality:
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: sqlite+pysqlite:///:memory:
+      DATABASE_URL: "sqlite+pysqlite:///:memory:"
     defaults:
       run:
         working-directory: backend
