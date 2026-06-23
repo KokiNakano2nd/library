@@ -995,7 +995,7 @@ docs: add github upload guide
 - [x] Step 18: Docker化内容のドキュメント反映
 
 ## CI導入チェックリスト
-- [ ] Step 19: backend の CI 導入
+- [x] Step 19: backend の CI 導入
 - [ ] Step 20: frontend の CI 導入
 - [ ] Step 21: Docker Compose と Playwright を使う CI 導入
 - [ ] Step 22: CI 運用内容のドキュメント反映

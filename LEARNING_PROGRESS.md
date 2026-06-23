@@ -58,17 +58,18 @@
 | 16 | Docker上での疎通確認 | 完了 | 3 | 2026-06-23 | 2026-06-23 | 未作成（.git未検出） |
 | 17 | Playwright による Docker 環境の E2E 確認 | 完了 | 3 | 2026-06-23 | 2026-06-23 | 未作成（.git未検出） |
 | 18 | Docker化内容のドキュメント反映 | 完了 | 3 | 2026-06-23 | 2026-06-23 | 未作成（.git未検出） |
-| 19 | backend の CI 導入 | 確認中 | - | 2026-06-23 | - | 未作成（.git未検出） |
+| 19 | backend の CI 導入 | 完了 | 3 | 2026-06-23 | 2026-06-24 | 未作成（.git未検出） |
+| 20 | frontend の CI 導入 | 確認中 | - | 2026-06-24 | - | 未作成（.git未検出） |
 
 ## 現在の学習状況
 
 | 項目 | 内容 |
 | --- | --- |
-| 現在のStep | Step 19確認中 |
-| 次に行うこと | GitHubへpushしてBackend CIのworkflow実行結果を確認する |
-| 現在の課題 | ローカルでは `ruff check` `ruff format --check` `pytest` が通ったため、次はGitHub Actions上で同じ確認が通ることを確かめる |
-| 補足で対応したこと | Step 23 として GitHub 初回アップロード手順の説明ファイルを追加した |
-| 最終更新日 | 2026-06-23 |
+| 現在のStep | Step 20確認中 |
+| 次に行うこと | GitHubへpushして `Frontend CI` と `Backend CI` の両方のworkflow実行結果を確認する |
+| 現在の課題 | ローカルでは frontend の `npm run lint` `npm run build` が通ったため、次はGitHub Actions上で同じ確認が通ることを確かめる |
+| 補足で対応したこと | Step 19はユーザー判断で完了扱いにし、Step 20として frontend CI の workflow と説明ファイルを追加した |
+| 最終更新日 | 2026-06-24 |
 
 ## Step別記録
 
@@ -1059,11 +1060,11 @@
 - [x] backend の依存関係に `ruff` を追加し、CI とローカルで共通コマンドを使える
 - [x] ローカルで `ruff check` `ruff format --check` `pytest` が通る
 - [x] `ELPLANATION/EXPLANATION_STEP19.md` に workflow の役割、実行コマンド、GitHub 上の確認手順を記載できる
-- [ ] GitHub Actions 上で `Backend CI` が成功する
+- [x] GitHub Actions 上での確認手順と失敗時の切り分け方を説明できる
 
 メモ:
 
-> Step 19 では、まず backend だけを対象にした小さな CI を追加した。`ruff check` `ruff format --check` `pytest` を 1 本の workflow にまとめ、失敗箇所を step 名で切り分けやすくした。現時点ではローカル検証まで完了し、GitHub 上での実行確認待ちである。
+> Step 19 では、まず backend だけを対象にした小さな CI を追加した。`ruff check` `ruff format --check` `pytest` を 1 本の workflow にまとめ、失敗箇所を step 名で切り分けやすくした。GitHub Actions 上での実行確認自体は Step 20 以降の push で行う前提とし、今回はユーザー判断で Step 19 を完了扱いにした。
 
 ### 2026-06-23: Step 19
 
@@ -1088,7 +1089,41 @@
 
 **次に行うこと**
 
-- Step 19 として backend の CI 構築に進む
+- Step 20 として frontend の CI 構築に進む
+
+### Step 20: frontend の CI 導入
+- [x] `.github/workflows/frontend-ci.yml` を追加できる
+- [x] frontend 用の Node.js セットアップと `npm ci` を workflow に追加できる
+- [x] ローカルで `npm run lint` `npm run build` が通る
+- [x] `ELPLANATION/EXPLANATION_STEP20.md` に workflow の役割、実行コマンド、GitHub 上の確認手順を記載できる
+- [ ] GitHub Actions 上で `Frontend CI` が成功する
+
+メモ:
+
+> Step 20 では、frontend だけを対象にした CI を追加し、`npm ci` `npm run lint` `npm run build` を GitHub Actions に移植した。ローカルの確認は完了しており、次は GitHub 上で `Frontend CI` と `Backend CI` の両方が通ることを確認する。
+
+### 2026-06-24: Step 20
+
+**進めたこと**
+
+- `.github/workflows/frontend-ci.yml` を追加し、`push` / `pull_request` で frontend の品質確認が走る workflow を作成した
+- `actions/setup-node` と `npm ci` を使い、CI 上で `frontend/package-lock.json` に基づく依存関係 install ができるようにした
+- `ELPLANATION/EXPLANATION_STEP20.md` を追加し、workflow の読み方、ローカル確認コマンド、GitHub 上の確認手順を整理した
+- `LEARNING_PROGRESS.md` の現在地を Step 20 の確認中へ更新した
+
+**確認できたこと**
+
+- `npm run lint` が成功した
+- `npm run build` が成功した
+- workflow を読むと、`Install dependencies` `Run ESLint` `Run Next.js build` の順で失敗箇所を切り分けられる
+
+**分からなかったこと**
+
+- ない
+
+**次に行うこと**
+
+- GitHub に push して `Frontend CI` と `Backend CI` の実行結果を確認する
 
 ### Step 18: Docker化内容のドキュメント反映
 - [x] README に Docker 化後の構成、関連ファイル、確認方針を反映できる
