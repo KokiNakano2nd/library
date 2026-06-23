@@ -64,6 +64,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install -e .
 
       - name: Run Ruff check
         run: ruff check .
@@ -72,7 +73,7 @@ jobs:
         run: ruff format --check .
 
       - name: Run pytest
-        run: pytest
+        run: python -m pytest
 ```
 
 このコードで何が起きているか:
@@ -83,10 +84,11 @@ jobs:
 - `actions/checkout@v5` と `actions/setup-python@v6` は Node 24 対応版です
 - `actions/setup-python@v6` で CI 上の Python バージョンを固定しています
 - `pip install -r requirements.txt` はローカルで使っている依存関係をそのまま CI に移植する役目です
+- `pip install -e .` は `backend/setup.py` を使って `app` パッケージを import 可能にし、CI 上の `ModuleNotFoundError: No module named 'app'` を避けます
 - `ruff check .` は import 順や未使用 import などの静的検査を行います
 - `ruff format --check .` は整形されていないファイルを検出し、フォーマット差分が混ざったまま merge されるのを防ぎます
-- `pytest` は `backend/tests` の API テストを実行します
-- 呼び出し順番は、Python 準備 → 依存関係 install → lint → format check → test です
+- `python -m pytest` は `backend/tests` の API テストを実行します
+- 呼び出し順番は、Python 準備 → 依存関係 install → editable install → lint → format check → test です
 - この順番にした理由は、構文や整形の崩れを先に落としてからテストへ進むと、失敗の切り分けがしやすいためです
 
 ### `backend/requirements.txt`
@@ -130,6 +132,13 @@ ruff==0.12.0
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+目的: `app` パッケージを import できるように editable install を行う  
+実行ディレクトリ: `C:\Users\rnm21\AI_Coding_study\Library\backend`
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e .
 ```
 
 目的: backend の静的解析が通ることを確認する  
