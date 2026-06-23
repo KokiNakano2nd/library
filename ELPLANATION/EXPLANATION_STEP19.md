@@ -52,8 +52,11 @@ jobs:
 ### `.github/workflows/backend-ci.yml`
 
 ```yaml
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.13"
 
@@ -77,7 +80,8 @@ jobs:
 - 入口: `backend-quality` job 開始後の step 実行
 - 引数: Python 3.13、`backend/requirements.txt`、`backend` 配下の Python コード
 - 戻り値: 各 step の成功 / 失敗
-- `actions/setup-python@v5` で CI 上の Python バージョンを固定しています
+- `actions/checkout@v5` と `actions/setup-python@v6` は Node 24 対応版です
+- `actions/setup-python@v6` で CI 上の Python バージョンを固定しています
 - `pip install -r requirements.txt` はローカルで使っている依存関係をそのまま CI に移植する役目です
 - `ruff check .` は import 順や未使用 import などの静的検査を行います
 - `ruff format --check .` は整形されていないファイルを検出し、フォーマット差分が混ざったまま merge されるのを防ぎます
