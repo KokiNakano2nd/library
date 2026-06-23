@@ -1,8 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
+import { resolveEvidenceDir } from "./support/evidence";
 
-const evidenceDir = path.resolve("../test/evidence/step15-playwright");
+const evidenceDir = resolveEvidenceDir("../test/evidence/step15-playwright");
 
 test("docker compose の環境変数設定で books 画面を表示できる", async ({
   page,

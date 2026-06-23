@@ -1,8 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
+import { resolveEvidenceDir } from "./support/evidence";
 
-const evidenceDir = path.resolve("../test/evidence/step14-playwright");
+const evidenceDir = resolveEvidenceDir("../test/evidence/step14-playwright");
 
 test("docker compose で books 画面へ到達できる", async ({ page }) => {
   await mkdir(evidenceDir, { recursive: true });

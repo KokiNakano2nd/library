@@ -1,8 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
+import { resolveEvidenceDir } from "./support/evidence";
 
-const evidenceDir = path.resolve("../test/evidence/step16-playwright");
+const evidenceDir = resolveEvidenceDir("../test/evidence/step16-playwright");
 const apiBaseUrl =
   process.env.DOCKER_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
 

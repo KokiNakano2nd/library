@@ -1,10 +1,11 @@
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
+import { resolveEvidenceDir } from "./support/evidence";
 
 const apiBaseUrl =
   process.env.DOCKER_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
-const evidenceDir = path.resolve("../test/evidence/step17-playwright");
+const evidenceDir = resolveEvidenceDir("../test/evidence/step17-playwright");
 
 type BookResponse = {
   id: number;
