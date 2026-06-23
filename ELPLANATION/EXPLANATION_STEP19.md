@@ -33,6 +33,8 @@ on:
 jobs:
   backend-quality:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: sqlite+pysqlite:///:memory:
     defaults:
       run:
         working-directory: backend
@@ -45,6 +47,7 @@ jobs:
 - 戻り値: GitHub Actions の job 実行結果
 - `paths` により、backend 関連ファイルか workflow 自身が変わったときだけ CI を起動します
 - `backend-quality` という job 名を分けたことで、Actions 画面で「backend 品質確認の job」が落ちたと判断しやすくしています
+- `env` にテスト用の `DATABASE_URL` を置き、`app.database` の import 時点で `DATABASE_URL is not set` にならないようにしています
 - `working-directory: backend` を設定しているため、以降の `pip install -r requirements.txt` や `pytest` は backend 直下を基準に動きます
 - 正常系では checkout 後に backend 依存関係 install、lint、test が順番に流れます
 - 異常系では `ruff check` `ruff format --check` `pytest` のどこで失敗したかが step 名で分かります
@@ -88,6 +91,7 @@ jobs:
 - `ruff check .` は import 順や未使用 import などの静的検査を行います
 - `ruff format --check .` は整形されていないファイルを検出し、フォーマット差分が混ざったまま merge されるのを防ぎます
 - `python -m pytest` は `backend/tests` の API テストを実行します
+- 今回の API テストは `tests/conftest.py` で SQLite の in-memory DB に差し替えるため、workflow 側の `DATABASE_URL` は import 初期化を通すための最低限の値として使われます
 - 呼び出し順番は、Python 準備 → 依存関係 install → editable install → lint → format check → test です
 - この順番にした理由は、構文や整形の崩れを先に落としてからテストへ進むと、失敗の切り分けがしやすいためです
 
