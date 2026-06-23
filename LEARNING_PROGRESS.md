@@ -60,16 +60,19 @@
 | 18 | Docker化内容のドキュメント反映 | 完了 | 3 | 2026-06-23 | 2026-06-23 | 未作成（.git未検出） |
 | 19 | backend の CI 導入 | 完了 | 3 | 2026-06-23 | 2026-06-24 | 未作成（.git未検出） |
 | 20 | frontend の CI 導入 | 完了 | 3 | 2026-06-24 | 2026-06-24 | 未作成（.git未検出） |
-| 21 | Docker Compose と Playwright を使う CI 導入 | 確認中 | - | 2026-06-24 | - | 未作成（.git未検出） |
+| 21 | Docker Compose と Playwright を使う CI 導入 | 完了 | 3 | 2026-06-24 | 2026-06-24 | 未作成（.git未検出） |
+| 22 | CI 運用内容のドキュメント反映 | 完了 | 3 | 2026-06-24 | 2026-06-24 | 未作成（.git未検出） |
+| 23 | GitHub への初回アップロード手順整理 | 完了 | 3 | 2026-06-23 | 2026-06-23 | 未作成（.git未検出） |
+| 24 | users テーブルとパスワード管理基盤 | 完了 | 3 | 2026-06-24 | 2026-06-24 | 未作成（.git未検出） |
 
 ## 現在の学習状況
 
 | 項目 | 内容 |
 | --- | --- |
-| 現在のStep | Step 21確認中 |
-| 次に行うこと | GitHubへpushして `Frontend CI` `Backend CI` `Docker Compose E2E CI` の実行結果を確認する |
-| 現在の課題 | ローカルでは Compose 上の Playwright E2E を再現できても、最終的な完了条件は GitHub Actions 上で Docker Compose 起動から artifact 保存まで通ること |
-| 補足で対応したこと | Step 20はユーザー判断で完了扱いにし、Step 21として Docker Compose E2E workflow と説明ファイルを追加した |
+| 現在のStep | Step 24完了 |
+| 次に行うこと | Step 25 としてログイン API と認証状態管理へ進む |
+| 現在の課題 | ログイン方式を session と JWT のどちらで進めるか、未認証時の画面遷移とAPIエラー方針を整理する必要がある |
+| 補足で対応したこと | Step 24で `users` テーブル、パスワードハッシュ化、初期管理者作成API、Playwright API テストを追加した |
 | 最終更新日 | 2026-06-24 |
 
 ## Step別記録
@@ -1056,6 +1059,46 @@
 - 実際にどの repository 名で公開するか
 - 実際に `Public` と `Private` のどちらで運用するか
 
+### Step 24: users テーブルとパスワード管理基盤
+- [x] `users` テーブルを migration で作成できる
+- [x] `email` と `username` の一意制約を実装できる
+- [x] パスワードを平文保存せず `scrypt` でハッシュ化して保存できる
+- [x] `POST /api/admin/bootstrap` で初期管理者を1回だけ作成できる
+- [x] `pytest` と Playwright で Step 24 の確認ができる
+- [x] `README.md` と `ELPLANATION/EXPLANATION_STEP24.md` に仕様とコード説明を反映できる
+
+メモ:
+
+> Step 24 では、まだログイン機能までは入れず、認証の前提となる利用者データ保存とパスワード保護だけを先に追加した。初期管理者作成は一度だけ許可し、レスポンスへ `password_hash` を出さない構成にして、Step 25 のログインAPI追加へつなげられる状態にした。
+
+### 2026-06-24: Step 24
+
+**進めたこと**
+
+- `backend/app/models/user.py` と `backend/alembic/versions/1f8e0b6e6a24_add_users_table.py` を追加し、`users` テーブルを管理対象へ加えた
+- `backend/app/services/security.py` に `scrypt` ベースの `hash_password()` と `verify_password()` を実装した
+- `backend/app/routers/admin.py` に `POST /api/admin/bootstrap` を追加し、利用者が0件のときだけ初期管理者を作成できるようにした
+- `backend/tests/test_users_api.py` を追加し、ハッシュ化、1回限りの bootstrap、入力検証を `pytest` で確認した
+- `frontend/e2e/admin-bootstrap-api.spec.ts` を追加し、Playwright の API テストで初回成功と2回目の `409 Conflict` を確認した
+- `README.md` に `users` テーブル、初期管理者作成API、認証準備の仕様を反映した
+- `ELPLANATION/EXPLANATION_STEP24.md` を追加し、コード説明、確認コマンド、証跡パスを整理した
+
+**確認できたこと**
+
+- `users` テーブルが Alembic migration で作成される
+- 初期管理者作成APIのレスポンスに `password_hash` が含まれない
+- DBには平文ではなくハッシュ化済みパスワードが保存される
+- 初回作成後に同じAPIを再実行すると `409 Conflict` になる
+- Playwright 証跡を `test/evidence/step24-playwright/01-admin-bootstrap-response.json` に保存できる
+
+**分からなかったこと**
+
+- Step 25 で session 認証と JWT 認証のどちらを採用するかは未決定
+
+**次に行うこと**
+
+- Step 25 としてログイン API、認証状態の保持、未認証時レスポンス方針を決める
+
 ### Step 19: backend の CI 導入
 - [x] `.github/workflows/backend-ci.yml` を追加できる
 - [x] backend の依存関係に `ruff` を追加し、CI とローカルで共通コマンドを使える
@@ -1132,11 +1175,11 @@
 - [x] backend / frontend の起動待ちを workflow に追加できる
 - [x] Compose 上の Playwright E2E を workflow から実行できる
 - [x] `ELPLANATION/EXPLANATION_STEP21.md` に workflow の役割、証跡保存方針、GitHub 上の確認手順を記載できる
-- [ ] GitHub Actions 上で `Docker Compose E2E CI` が成功する
+- [x] GitHub Actions 上での最終確認は今後の push 後に行う前提で、今回はユーザー判断で完了扱いにする
 
 メモ:
 
-> Step 21 では、Docker Compose で `frontend` `backend` `db` を起動し、その上で Playwright の smoke / connectivity / CRUD を GitHub Actions から実行できるようにした。ローカルでの構成確認と workflow 定義までは完了しており、最終確認は GitHub 上で `Docker Compose E2E CI` が artifact 保存まで通ることを見る。
+> Step 21 では、Docker Compose で `frontend` `backend` `db` を起動し、その上で Playwright の smoke / connectivity / CRUD を GitHub Actions から実行できるようにした。GitHub 上での最終実行確認は未了だが、今回はユーザー判断で Step 21 を完了扱いにし、次の Step 22 で CI ドキュメント整理へ進んだ。
 
 ### 2026-06-24: Step 21
 
@@ -1164,7 +1207,41 @@
 
 **次に行うこと**
 
-- GitHub に push して `Frontend CI` `Backend CI` `Docker Compose E2E CI` の実行結果と artifact を確認する
+- Step 22 として README、説明ファイル、進捗ファイルへ CI の役割分担を反映する
+
+### Step 22: CI 運用内容のドキュメント反映
+- [x] `README.md` に CI で自動確認している範囲を反映できる
+- [x] `ELPLANATION/EXPLANATION_STEP22.md` に workflow の役割と実行順序を書ける
+- [x] `LEARNING_PROGRESS.md` に学びと詰まった点を記録できる
+- [x] ローカル確認と CI 確認の役割分担を明文化できる
+
+メモ:
+
+> Step 22 では、Step 19 から Step 21 までで追加した 3 本の workflow がそれぞれ何を保証するかを README と説明ファイルへ反映した。ローカル確認は切り分け、CI 確認は継続的再確認という役割分担を文章として残し、後続 Step から参照しやすくした。
+
+### 2026-06-24: Step 22
+
+**進めたこと**
+
+- `README.md` の対象範囲を更新し、Docker Compose と GitHub Actions の CI を現在の対象へ反映した
+- `README.md` のテスト方針、フォルダ構成、Docker・CI 関連ファイル一覧へ backend / frontend / E2E の 3 workflow の役割を追記した
+- `ELPLANATION/EXPLANATION_STEP22.md` を追加し、README と進捗ファイルをどの観点で更新したかをコード抜粋つきで整理した
+- `LEARNING_ROADMAP.md` と `LEARNING_PROGRESS.md` を更新し、Step 21 と Step 22 を完了扱いにそろえた
+
+**確認できたこと**
+
+- README だけを読むだけで、backend CI、frontend CI、Docker Compose E2E CI の責務分担を追える
+- フォルダ構成に Compose 向け Playwright spec、`e2e/support/evidence.ts`、`.github/workflows` を反映できた
+- 進捗表、現在地、Step別記録の 3 か所で Step 21 / 22 の状態を矛盾なく更新できた
+- Step 21 はユーザー判断で完了扱い、GitHub 上の実行結果確認は今後の push 後に行う、という前提を文章で残せた
+
+**分からなかったこと**
+
+- ない
+
+**次に行うこと**
+
+- Step 23 として GitHub への初回アップロード手順整理に進む
 
 ### Step 18: Docker化内容のドキュメント反映
 - [x] README に Docker 化後の構成、関連ファイル、確認方針を反映できる
