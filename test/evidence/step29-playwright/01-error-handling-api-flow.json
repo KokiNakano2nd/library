@@ -1,0 +1,59 @@
+{
+  "unauthenticatedResponse": {
+    "status": 401,
+    "body": {
+      "detail": "認証が必要です",
+      "error_code": "authentication_required",
+      "request_id": "step29-unauthenticated-request"
+    },
+    "requestIdHeader": "step29-unauthenticated-request"
+  },
+  "validationResponse": {
+    "status": 422,
+    "body": {
+      "detail": "入力内容を確認してください",
+      "error_code": "validation_error",
+      "request_id": "step29-validation-request",
+      "errors": [
+        {
+          "type": "value_error",
+          "loc": [
+            "body",
+            "title"
+          ],
+          "msg": "Value error, 空白だけの入力はできません",
+          "input": "   ",
+          "ctx": {
+            "error": {}
+          }
+        }
+      ]
+    },
+    "requestIdHeader": "step29-validation-request"
+  },
+  "createResponse": {
+    "status": 201,
+    "body": {
+      "id": 1,
+      "title": "Step29 重複確認本",
+      "author": "構造化ログ著者",
+      "published_year": 2026,
+      "isbn": "step29-error-003",
+      "created_at": "2026-06-24T15:31:35.861277",
+      "updated_at": "2026-06-24T15:31:35.861277"
+    }
+  },
+  "conflictResponse": {
+    "status": 409,
+    "body": {
+      "detail": "同じISBNの本がすでに登録されています",
+      "error_code": "duplicate_isbn",
+      "request_id": "step29-conflict-request"
+    },
+    "requestIdHeader": "step29-conflict-request"
+  },
+  "healthResponse": {
+    "status": 200,
+    "requestIdHeader": "dbace59b4c8246fb8b5dc1f5db18a85c"
+  }
+}

@@ -1,9 +1,11 @@
+import type { LoginInput, LoginResponse } from "@/types/auth";
 import type { Book, BookInput } from "@/types/book";
 
-const BROWSER_API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+const BROWSER_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? null;
 const SERVER_API_BASE_URL =
-  process.env.INTERNAL_API_BASE_URL ?? BROWSER_API_BASE_URL;
+  process.env.INTERNAL_API_BASE_URL ??
+  process.env.NEXT_PUBLIC_API_BASE_URL ??
+  "http://localhost:8000";
 
 export type ApiResult<T> =
   | { ok: true; data: T }
@@ -14,7 +16,11 @@ function getApiBaseUrl(): string {
     return SERVER_API_BASE_URL;
   }
 
-  return BROWSER_API_BASE_URL;
+  if (BROWSER_API_BASE_URL !== null) {
+    return BROWSER_API_BASE_URL;
+  }
+
+  return `${window.location.protocol}//${window.location.hostname}:8000`;
 }
 
 function getErrorDetail(errorBody: unknown): unknown {
@@ -40,6 +46,14 @@ function getErrorMessage(
 
   if (status === 404) {
     return "指定された本は見つかりません。";
+  }
+
+  if (status === 401) {
+    return "この操作を行うにはログインが必要です。";
+  }
+
+  if (status === 403) {
+    return "この操作は管理者だけが実行できます。";
   }
 
   if (status === 405) {
@@ -72,6 +86,42 @@ export async function fetchBooks(): Promise<ApiResult<Book[]>> {
 
     const books: Book[] = await response.json();
     return { ok: true, data: books };
+  } catch {
+    return {
+      ok: false,
+      message: "APIに接続できませんでした。",
+    };
+  }
+}
+
+export async function loginUser(
+  loginInput: LoginInput,
+): Promise<ApiResult<LoginResponse>> {
+  try {
+    const response = await fetch(`${getApiBaseUrl()}/api/auth/login`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(loginInput),
+    });
+
+    if (!response.ok) {
+      const errorBody: unknown = await response.json().catch(() => null);
+
+      return {
+        ok: false,
+        message: getErrorMessage(
+          response.status,
+          getErrorDetail(errorBody),
+          "ログインに失敗しました。",
+        ),
+      };
+    }
+
+    const loginResponse: LoginResponse = await response.json();
+    return { ok: true, data: loginResponse };
   } catch {
     return {
       ok: false,
@@ -113,6 +163,7 @@ export async function createBook(book: BookInput): Promise<ApiResult<Book>> {
   try {
     const response = await fetch(`${getApiBaseUrl()}/api/books`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -149,6 +200,7 @@ export async function updateBook(
   try {
     const response = await fetch(`${getApiBaseUrl()}/api/books/${bookId}`, {
       method: "PUT",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -181,6 +233,7 @@ export async function updateBook(
 export async function deleteBook(bookId: number): Promise<ApiResult<null>> {
   try {
     const response = await fetch(`${getApiBaseUrl()}/api/books/${bookId}`, {
+      credentials: "include",
       method: "DELETE",
     });
 

@@ -1,9 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.errors import ConflictError, ResourceNotFoundError
 from app.models.book import Book
+from app.models.user import User
 from app.schemas.book import BookCreate, BookResponse, BookUpdate
+from app.services.auth import require_admin_user
 from app.services.book import (
     BookNotFoundError,
     DuplicateIsbnError,
@@ -30,9 +33,9 @@ def get_book_endpoint(
     try:
         return get_book(db, book_id)
     except BookNotFoundError as error:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+        raise ResourceNotFoundError(
             detail="指定された本は見つかりません",
+            error_code="book_not_found",
         ) from error
 
 
@@ -40,13 +43,14 @@ def get_book_endpoint(
 def create_book_endpoint(
     book_create: BookCreate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin_user),
 ) -> Book:
     try:
-        return create_book(db, book_create)
+        return create_book(db, book_create, current_user)
     except DuplicateIsbnError as error:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
+        raise ConflictError(
             detail="同じISBNの本がすでに登録されています",
+            error_code="duplicate_isbn",
         ) from error
 
 
@@ -55,18 +59,19 @@ def update_book_endpoint(
     book_id: int,
     book_update: BookUpdate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin_user),
 ) -> Book:
     try:
-        return update_book(db, book_id, book_update)
+        return update_book(db, book_id, book_update, current_user)
     except BookNotFoundError as error:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+        raise ResourceNotFoundError(
             detail="指定された本は見つかりません",
+            error_code="book_not_found",
         ) from error
     except DuplicateIsbnError as error:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
+        raise ConflictError(
             detail="同じISBNの本がすでに登録されています",
+            error_code="duplicate_isbn",
         ) from error
 
 
@@ -74,12 +79,13 @@ def update_book_endpoint(
 def delete_book_endpoint(
     book_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin_user),
 ) -> Response:
     try:
-        delete_book(db, book_id)
+        delete_book(db, book_id, current_user)
         return Response(status_code=status.HTTP_204_NO_CONTENT)
     except BookNotFoundError as error:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+        raise ResourceNotFoundError(
             detail="指定された本は見つかりません",
+            error_code="book_not_found",
         ) from error

@@ -1,0 +1,49 @@
+{
+  "bootstrapResponse": {
+    "status": 201,
+    "body": {
+      "id": 1,
+      "email": "step25-admin@example.com",
+      "username": "step25-admin",
+      "role": "admin",
+      "is_active": true,
+      "created_at": "2026-06-23T23:44:05.251872",
+      "updated_at": "2026-06-23T23:44:05.251872"
+    }
+  },
+  "loginResponse": {
+    "status": 200,
+    "body": {
+      "user": {
+        "id": 1,
+        "email": "step25-admin@example.com",
+        "username": "step25-admin",
+        "role": "admin",
+        "is_active": true,
+        "created_at": "2026-06-23T23:44:05.251872",
+        "updated_at": "2026-06-23T23:44:05.251872"
+      },
+      "expires_at": "2026-06-24T00:14:05Z"
+    }
+  },
+  "meResponse": {
+    "status": 200,
+    "body": {
+      "user": {
+        "id": 1,
+        "email": "step25-admin@example.com",
+        "username": "step25-admin",
+        "role": "admin",
+        "is_active": true,
+        "created_at": "2026-06-23T23:44:05.251872",
+        "updated_at": "2026-06-23T23:44:05.251872"
+      }
+    }
+  },
+  "unauthenticatedMeResponse": {
+    "status": 401,
+    "body": {
+      "detail": "認証が必要です"
+    }
+  }
+}

@@ -64,16 +64,21 @@
 | 22 | CI 運用内容のドキュメント反映 | 完了 | 3 | 2026-06-24 | 2026-06-24 | 未作成（.git未検出） |
 | 23 | GitHub への初回アップロード手順整理 | 完了 | 3 | 2026-06-23 | 2026-06-23 | 未作成（.git未検出） |
 | 24 | users テーブルとパスワード管理基盤 | 完了 | 3 | 2026-06-24 | 2026-06-24 | 未作成（.git未検出） |
+| 25 | ログイン API と認証状態管理 | 完了 | 3 | 2026-06-24 | 2026-06-24 | 未作成（.git未検出） |
+| 26 | 認可と認証必須 API 化 | 完了 | 3 | 2026-06-24 | 2026-06-24 | 未作成（.git未検出） |
+| 27 | ログイン画面 | 完了 | 3 | 2026-06-24 | 2026-06-24 | 未作成（.git未検出） |
+| 28 | 監査ログ | 完了 | 3 | 2026-06-25 | 2026-06-25 | 未作成（.git未検出） |
+| 29 | 構造化ログと例外ハンドリング統一 | 完了 | 3 | 2026-06-25 | 2026-06-25 | 未作成（.git未検出） |
 
 ## 現在の学習状況
 
 | 項目 | 内容 |
 | --- | --- |
-| 現在のStep | Step 24完了 |
-| 次に行うこと | Step 25 としてログイン API と認証状態管理へ進む |
-| 現在の課題 | ログイン方式を session と JWT のどちらで進めるか、未認証時の画面遷移とAPIエラー方針を整理する必要がある |
-| 補足で対応したこと | Step 24で `users` テーブル、パスワードハッシュ化、初期管理者作成API、Playwright API テストを追加した |
-| 最終更新日 | 2026-06-24 |
+| 現在のStep | Step 29完了 |
+| 次に行うこと | Step 10 の全体振り返りを行い、ここまでのデータフローとエラー切り分けを説明できる状態にする |
+| 現在の課題 | 実装自体は一巡したため、CRUD、認証、認可、監査ログ、構造化ログを通した全体説明と運用観点の整理が必要 |
+| 補足で対応したこと | Step 29 で `request_id` 付き構造化ログと統一エラーレスポンスを導入し、`401` `403` `409` `422` `500` を同じ形式で返せるようにした |
+| 最終更新日 | 2026-06-25 |
 
 ## Step別記録
 
@@ -1098,6 +1103,209 @@
 **次に行うこと**
 
 - Step 25 としてログイン API、認証状態の保持、未認証時レスポンス方針を決める
+
+### Step 25: ログイン API と認証状態管理
+- [x] `POST /api/auth/login` で `email` または `username` によりログインできる
+- [x] `POST /api/auth/logout` で認証Cookieを削除できる
+- [x] `GET /api/auth/me` で認証済み利用者を取得できる
+- [x] JWT の方針と保存先を決め、未認証時は `401 Unauthorized` を返せる
+- [x] `pytest` と Playwright で Step 25 の確認ができる
+- [x] `README.md` と `ELPLANATION/EXPLANATION_STEP25.md` に仕様とコード説明を反映できる
+
+メモ:
+
+> Step 25 では、資格情報の照合、認証状態の保持、現在ユーザー取得の3点を最小構成で追加した。保存先は `HttpOnly` Cookie、トークン形式は署名付きJWTとし、本API自体の認証必須化はまだ行わず、Step 26 の認可導入へつなげる状態にした。
+
+### 2026-06-24: Step 25
+
+**進めたこと**
+
+- `backend/app/routers/auth.py` を追加し、`POST /api/auth/login` `POST /api/auth/logout` `GET /api/auth/me` を実装した
+- `backend/app/services/auth.py` を追加し、ログイン判定、認証済み利用者の共通取得、Cookie と Bearer token の読み取りをまとめた
+- `backend/app/services/security.py` に JWT 生成・検証処理を追加し、`library_access_token` Cookie に保存する構成にした
+- `backend/app/repositories/user.py` に `get_user_by_id()` を追加し、トークン内の `sub` から利用者を引けるようにした
+- `backend/tests/test_auth_api.py` を追加し、ログイン成功、`username` ログイン、認証失敗、ログアウト後の `401` を確認した
+- `frontend/e2e/auth-api.spec.ts` を追加し、Playwright で bootstrap → login → me → logout → `401` の流れを証跡化した
+- `README.md` にログインAPI、認証Cookie、JWT方針、Step 25 時点で books API をまだ公開のままにする方針を反映した
+- `ELPLANATION/EXPLANATION_STEP25.md` を追加し、コード説明、確認コマンド、証跡パスを整理した
+
+**確認できたこと**
+
+- `login_id` に `email` と `username` の両方を使える
+- 正しい資格情報では `200 OK` と `library_access_token` Cookie が返る
+- `GET /api/auth/me` が現在の利用者を返す
+- ログアウト後は `GET /api/auth/me` が `401 Unauthorized` になる
+- Playwright 証跡を `test/evidence/step25-playwright/01-auth-api-flow.json` に保存できる
+
+**分からなかったこと**
+
+- ない
+
+**次に行うこと**
+
+- Step 26 として books API などに認証必須化を入れ、`admin` ロールを使った認可判定へ進む
+
+### Step 26: 認可と認証必須 API 化
+- [x] books API の登録・更新・削除を認証必須にできる
+- [x] `admin` 以外では保護操作が `403 Forbidden` になる
+- [x] 一覧・詳細は公開のまま残し、保護範囲を説明できる
+- [x] frontend で未認証・権限不足時の表示方針を反映できる
+- [x] `pytest` と Playwright で Step 26 の確認ができる
+- [x] `README.md` と `ELPLANATION/EXPLANATION_STEP26.md` に仕様とコード説明を反映できる
+
+メモ:
+
+> Step 26 では books API を一律に閉じるのではなく、参照系は公開、更新系だけを認証済み `admin` に限定した。これにより、認証と認可の違いを小さな差分で確認しつつ、次の Step 27 でログイン画面を追加して認証導線を完成させやすい構成にした。
+
+### 2026-06-24: Step 26
+
+**進めたこと**
+
+- `backend/app/services/auth.py` に `require_admin_user()` を追加し、`admin` 以外を `403 Forbidden` に統一した
+- `backend/app/routers/books.py` で `POST` `PUT` `DELETE /api/books` に認可 dependency を追加した
+- `backend/tests/test_books_api.py` を更新し、公開参照、未認証 `401`、非 `admin` `403`、管理者成功を確認した
+- `frontend/lib/server-auth.ts` と `frontend/types/auth.ts` を追加し、server-side で現在ユーザーを取得できるようにした
+- `frontend/app/books/page.tsx` `frontend/app/books/new/page.tsx` `frontend/app/books/[id]/edit/page.tsx` を更新し、管理者だけに登録・編集・削除導線を出すようにした
+- `frontend/e2e/books-authorization.spec.ts` を追加し、未認証表示と管理者表示の差分を Playwright 証跡に残した
+- `README.md` に保護対象API、`401` / `403`、frontend 表示方針を反映した
+- `ELPLANATION/EXPLANATION_STEP26.md` を追加し、コード説明、確認コマンド、証跡パスを整理した
+
+**確認できたこと**
+
+- 未認証では `POST` `PUT` `DELETE /api/books` が `401 Unauthorized` になる
+- 認証済みでも `admin` 以外では更新系 books API が `403 Forbidden` になる
+- 管理者は books API の登録・更新・削除を継続して実行できる
+- frontend の `/books` では未認証時に管理導線が消え、管理者時には表示される
+- Playwright 証跡を `test/evidence/step26-playwright` に保存できる
+
+**分からなかったこと**
+
+- ない
+
+**次に行うこと**
+
+- Step 27 として `/login` 画面、ログインフォーム、ログイン成功後の画面遷移を追加する
+
+### Step 27: ログイン画面
+- [x] `/login` 画面を追加する
+- [x] `login_id` と `password` のフォームを追加する
+- [x] `POST /api/auth/login` を呼び出す frontend 側処理を追加する
+- [x] ログイン失敗メッセージを画面に表示する
+- [x] ログイン成功後に `/books` へ遷移させる
+- [x] 既に認証済みの場合の表示またはリダイレクト方針を実装する
+- [x] Playwright で正常系と異常系を確認する
+- [x] `README.md` と `ELPLANATION/EXPLANATION_STEP27.md` に反映する
+
+メモ:
+
+> Step 27 では、すでにある認証 API を実際の画面操作へつなぐ。Step 26 までは server-side で Cookie を読んで管理導線の表示だけを切り替えていたが、この Step で利用者自身がログインできる入口を追加する。
+
+### 2026-06-24: Step 27
+
+**進めたこと**
+
+- `frontend/app/login/page.tsx` を追加し、未認証時だけログイン画面を表示し、認証済みなら `/books` へリダイレクトするようにした
+- `frontend/components/LoginForm.tsx` を追加し、`login_id` と `password` の入力、`POST /api/auth/login` の送信、エラー表示、成功後の遷移を実装した
+- `frontend/lib/api.ts` と `frontend/types/auth.ts` を更新し、frontend から認証 API を呼ぶ型付き関数を追加した
+- `frontend/app/books/page.tsx` `frontend/app/books/new/page.tsx` `frontend/app/books/[id]/edit/page.tsx` を更新し、ログイン画面への導線を追加した
+- `frontend/e2e/login-page.spec.ts` を追加し、ログイン失敗表示、ログイン成功、認証済み再訪時リダイレクトを Playwright で確認した
+- `README.md` と `ELPLANATION/EXPLANATION_STEP27.md` を更新し、画面仕様、確認コマンド、証跡パスを記録した
+
+**確認できたこと**
+
+- `/books` から `/login` へ移動できる
+- 誤った資格情報ではエラーメッセージが表示される
+- 正しい資格情報では `/books` へ戻り、管理者導線が表示される
+- 認証済みのまま `/login` を開くと `/books` へリダイレクトされる
+- Playwright 証跡を `test/evidence/step27-playwright` に保存できる
+
+**分からなかったこと**
+
+- ない
+
+**次に行うこと**
+
+- Step 28 として books の変更操作に監査ログを追加する
+
+### Step 28: 監査ログ
+- [x] 監査対象の操作を books の作成、更新、削除に定義できる
+- [x] 実行者、対象、操作種別、実行時刻を `audit_logs` へ保存できる
+- [x] 削除後も対象を追えるようにタイトルのスナップショットを残せる
+- [x] `GET /api/audit-logs` を `admin` 限定で確認できる
+- [x] `pytest` と Playwright で監査ログの保存と参照を確認できる
+- [x] `README.md` と `ELPLANATION/EXPLANATION_STEP28.md` に仕様とコード説明を反映できる
+
+メモ:
+
+> Step 28 では通常ログとは別に、重要な変更操作だけを追跡する `audit_logs` を追加した。books 更新系と監査ログ保存を同じ transaction にまとめ、更新成功だけが履歴に残る構成にした。
+
+### 2026-06-25: Step 28
+
+**進めたこと**
+
+- `backend/app/models/audit_log.py` と `backend/alembic/versions/78e3f4a1b2c9_add_audit_logs_table.py` を追加し、`audit_logs` テーブルを migration 管理へ加えた
+- `backend/app/repositories/audit_log.py` `backend/app/services/audit_log.py` `backend/app/routers/audit_logs.py` を追加し、監査ログの保存と参照を backend へ実装した
+- `backend/app/services/book.py` と `backend/app/repositories/book.py` を更新し、本更新と監査ログ保存を同一 transaction で commit するようにした
+- `backend/tests/test_audit_logs_api.py` と `backend/tests/test_books_api.py` を更新し、保存順、権限制御、失敗時に監査ログが増えないことを `pytest` で確認した
+- `frontend/e2e/audit-logs-api.spec.ts` を追加し、Playwright で create → update → delete → `GET /api/audit-logs` を確認した
+- `README.md` と `ELPLANATION/EXPLANATION_STEP28.md` を更新し、監査ログ仕様、確認コマンド、証跡パスを整理した
+
+**確認できたこと**
+
+- 管理者による books の作成、更新、削除が成功したときだけ `audit_logs` が1件ずつ追加される
+- 監査ログには `actor_user_id` `actor_email` `action` `target_type` `target_id` `target_title` `occurred_at` が保存される
+- `GET /api/audit-logs` は未認証で `401`、非 `admin` で `403`、管理者で `200` を返す
+- ISBN 重複による `409 Conflict` など失敗した更新操作では監査ログが増えない
+- Playwright 証跡を `test/evidence/step28-playwright/01-audit-logs-api-flow.json` に保存できる
+
+**分からなかったこと**
+
+- ない
+
+**次に行うこと**
+
+- Step 29 として構造化ログと例外ハンドリング統一を追加する
+
+### Step 29: 構造化ログと例外ハンドリング統一
+- [x] API ごとの構造化ログを追加できる
+- [x] `request_id` をログとレスポンスに載せられる
+- [x] 共通 exception handler を追加できる
+- [x] `500 Internal Server Error` のレスポンス形式を統一できる
+- [x] 利用者向けメッセージと内部ログを分離できる
+- [x] `pytest` と Playwright で代表的な失敗系を確認できる
+- [x] `README.md` と `ELPLANATION/EXPLANATION_STEP29.md` に仕様とコード説明を反映できる
+
+メモ:
+
+> Step 29 では request ごとに `request_id` を付与し、`401` `403` `409` `422` `500` のレスポンス本文を `detail` `error_code` `request_id` の共通形式へそろえた。想定外例外の詳細は内部ログだけに残し、利用者には固定メッセージを返すようにした。
+
+### 2026-06-25: Step 29
+
+**進めたこと**
+
+- `backend/app/observability.py` を追加し、`request_id` の採番、`X-Request-ID` ヘッダー設定、JSON 形式の request 完了ログを実装した
+- `backend/app/errors.py` と `backend/app/schemas/error.py` を追加し、共通例外クラスと統一エラーレスポンス schema を作成した
+- `backend/app/main.py` に middleware と `AppError` `HTTPException` `RequestValidationError` `Exception` 向け handler を追加した
+- `backend/app/services/auth.py` と `backend/app/routers/*.py` を更新し、認証失敗、権限不足、競合、存在しない本を共通例外へ寄せた
+- `backend/tests/test_error_handling_api.py` を追加し、`request_id`、統一エラー形式、構造化ログ、想定外例外の `500` を `pytest` で確認した
+- `frontend/e2e/error-handling-api.spec.ts` を追加し、Playwright で `401` `422` `409` と `X-Request-ID` ヘッダーを確認できるようにした
+- `README.md` と `ELPLANATION/EXPLANATION_STEP29.md` を更新し、エラー仕様、ログ仕様、確認コマンド、証跡パスを整理した
+
+**確認できたこと**
+
+- 正常系、認証失敗、権限不足、入力エラー、競合、想定外例外を `request_id` 付きで追跡できる
+- エラーレスポンス本文を `detail` `error_code` `request_id` の同一形式で返せる
+- `422` では `errors` 配列も返り、どの入力が不正かを確認できる
+- 想定外例外の詳細は内部ログだけに残り、利用者向けレスポンスには固定メッセージだけが返る
+- Playwright 証跡を `test/evidence/step29-playwright/01-error-handling-api-flow.json` に保存できる
+
+**分からなかったこと**
+
+- ない
+
+**次に行うこと**
+
+- Step 10 の全体振り返りとして、ここまでの CRUD、認証、認可、監査ログ、構造化ログを通した説明を整理する
 
 ### Step 19: backend の CI 導入
 - [x] `.github/workflows/backend-ci.yml` を追加できる

@@ -22,6 +22,11 @@ def get_user_by_username(db: Session, username: str) -> User | None:
     return db.scalars(statement).first()
 
 
+def get_user_by_id(db: Session, user_id: int) -> User | None:
+    statement = select(User).where(User.id == user_id)
+    return db.scalars(statement).first()
+
+
 def create_user(
     db: Session,
     user_create: UserBootstrapRequest,

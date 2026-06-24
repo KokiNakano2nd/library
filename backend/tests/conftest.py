@@ -8,41 +8,48 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.database import Base, get_db
+from app.models.audit_log import AuditLog
 from app.main import app
 from app.models.book import Book
 from app.models.user import User
 
 
 @pytest.fixture
-def db_session() -> Generator[Session, None, None]:
-    test_engine = create_test_engine()
-    testing_session_local = sessionmaker(
+def test_engine() -> Generator[Engine, None, None]:
+    engine = create_test_engine()
+    Base.metadata.create_all(bind=engine)
+    try:
+        yield engine
+    finally:
+        Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture
+def testing_session_local(
+    test_engine: Engine,
+) -> sessionmaker[Session]:
+    return sessionmaker(
         bind=test_engine,
         autocommit=False,
         autoflush=False,
     )
 
-    Base.metadata.create_all(bind=test_engine)
 
+@pytest.fixture
+def db_session(
+    testing_session_local: sessionmaker[Session],
+) -> Generator[Session, None, None]:
     db = testing_session_local()
     try:
         yield db
     finally:
         db.close()
-        Base.metadata.drop_all(bind=test_engine)
 
 
 @pytest.fixture
-def client() -> Generator[TestClient, None, None]:
-    test_engine = create_test_engine()
-    testing_session_local = sessionmaker(
-        bind=test_engine,
-        autocommit=False,
-        autoflush=False,
-    )
-
-    Base.metadata.create_all(bind=test_engine)
-
+def client(
+    testing_session_local: sessionmaker[Session],
+) -> Generator[TestClient, None, None]:
     def override_get_db() -> Generator[Session, None, None]:
         db = testing_session_local()
         try:
@@ -56,7 +63,6 @@ def client() -> Generator[TestClient, None, None]:
         yield test_client
 
     app.dependency_overrides.clear()
-    Base.metadata.drop_all(bind=test_engine)
 
 
 def create_test_engine() -> Engine:
@@ -69,3 +75,4 @@ def create_test_engine() -> Engine:
 
 _ = Book
 _ = User
+_ = AuditLog

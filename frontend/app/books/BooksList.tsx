@@ -7,6 +7,7 @@ import { deleteBook } from "@/lib/api";
 import type { Book } from "@/types/book";
 
 type BooksListProps = {
+  canManageBooks: boolean;
   initialBooks: Book[];
 };
 
@@ -18,7 +19,7 @@ function formatIsbn(isbn: string | null): string {
   return isbn === null ? "Not set" : isbn;
 }
 
-export function BooksList({ initialBooks }: BooksListProps) {
+export function BooksList({ canManageBooks, initialBooks }: BooksListProps) {
   const [books, setBooks] = useState<Book[]>(initialBooks);
   const [deletingBookId, setDeletingBookId] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -83,19 +84,21 @@ export function BooksList({ initialBooks }: BooksListProps) {
                   <dd>{formatIsbn(book.isbn)}</dd>
                 </div>
               </dl>
-              <div className="book-actions">
-                <Link className="button-secondary" href={`/books/${book.id}/edit`}>
-                  編集
-                </Link>
-                <button
-                  className="button-danger"
-                  disabled={deletingBookId !== null}
-                  onClick={() => void handleDelete(book)}
-                  type="button"
-                >
-                  {deletingBookId === book.id ? "削除中" : "削除"}
-                </button>
-              </div>
+              {canManageBooks ? (
+                <div className="book-actions">
+                  <Link className="button-secondary" href={`/books/${book.id}/edit`}>
+                    編集
+                  </Link>
+                  <button
+                    className="button-danger"
+                    disabled={deletingBookId !== null}
+                    onClick={() => void handleDelete(book)}
+                    type="button"
+                  >
+                    {deletingBookId === book.id ? "削除中" : "削除"}
+                  </button>
+                </div>
+              ) : null}
             </div>
           </article>
         ))}

@@ -49,6 +49,12 @@ p {
   gap: 16px;
 }
 
+.page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .eyebrow {
   margin: 0;
   color: #4b5563;
@@ -213,6 +219,11 @@ button:disabled {
   justify-content: flex-end;
 }
 
+.auth-layout {
+  display: grid;
+  gap: 20px;
+}
+
 @media (max-width: 640px) {
   main {
     margin: 24px auto;
@@ -220,7 +231,8 @@ button:disabled {
   }
 
   .page-header-row,
-  .form-actions {
+  .form-actions,
+  .page-actions {
     align-items: stretch;
     flex-direction: column;
   }

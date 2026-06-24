@@ -1,8 +1,12 @@
 import Link from "next/link";
 
 import { BookForm } from "@/components/BookForm";
+import { fetchCurrentUser, isAdminUser } from "@/lib/server-auth";
 
-export default function NewBookPage() {
+export default async function NewBookPage() {
+  const currentUser = await fetchCurrentUser();
+  const canManageBooks = isAdminUser(currentUser);
+
   return (
     <main>
       <header className="page-header page-header-row">
@@ -15,7 +19,17 @@ export default function NewBookPage() {
         </Link>
       </header>
 
-      <BookForm />
+      {canManageBooks ? (
+        <BookForm />
+      ) : (
+        <section className="status status-error">
+          <h2>この画面は管理者だけが利用できます</h2>
+          <p>本を登録するには、管理者としてログインした状態でアクセスしてください。</p>
+          <p>
+            <Link href="/login">ログイン画面へ移動</Link>
+          </p>
+        </section>
+      )}
     </main>
   );
 }

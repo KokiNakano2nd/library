@@ -38,8 +38,7 @@ def create_book(
         updated_at=updated_at,
     )
     db.add(book)
-    db.commit()
-    db.refresh(book)
+    db.flush()
     return book
 
 
@@ -55,11 +54,10 @@ def update_book(
         setattr(book, field_name, value)
 
     book.updated_at = updated_at
-    db.commit()
-    db.refresh(book)
+    db.flush()
     return book
 
 
 def delete_book(db: Session, book: Book) -> None:
     db.delete(book)
-    db.commit()
+    db.flush()

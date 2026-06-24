@@ -1066,7 +1066,37 @@ feat: add login and authentication flow
 feat: enforce authorization on protected APIs
 ```
 
-## Step 27: 監査ログ
+## Step 27: ログイン画面
+### 目的
+認証 API だけでなく、利用者がブラウザ上から資格情報を入力してログインできる画面を追加し、認証導線を完成させる。
+### 実装・確認ポイント
+
+- `/login` 画面を追加する
+- `login_id` と `password` の入力フォームを作る
+- `POST /api/auth/login` を呼び出す frontend の API 関数を追加する
+- ログイン失敗時のエラーメッセージ表示を統一する
+- ログイン成功時に `/books` へ遷移させる
+- すでに認証済みの場合の表示またはリダイレクト方針を決める
+- 一覧画面などからログイン画面へ移動できる導線を追加する
+### 学ぶこと
+
+- 認証 API と画面フォームをつなぐ方法
+- Cookie を使う認証で frontend 側が意識すること
+- 成功時リダイレクトと失敗時再表示の設計
+- 公開画面と認証画面の導線設計
+### 完了条件
+
+- ブラウザから資格情報を入力してログインできる
+- 認証失敗時に理由を画面で確認できる
+- ログイン後に管理導線が表示される状態まで確認できる
+- Playwright でログイン画面の正常系と異常系を確認できる
+
+### コミット例
+```text
+feat: add login page
+```
+
+## Step 28: 監査ログ
 ### 目的
 誰がいつどのデータを変更したかを追跡できるようにし、通常ログとは別に重要操作の履歴を残す。
 ### 実装・確認ポイント
@@ -1093,7 +1123,7 @@ feat: enforce authorization on protected APIs
 feat: add audit trail for book operations
 ```
 
-## Step 28: 構造化ログと例外ハンドリング統一
+## Step 29: 構造化ログと例外ハンドリング統一
 ### 目的
 認証認可導入後に増える失敗パターンを追跡しやすくするため、アプリ全体のログ形式と例外処理を統一する。
 ### 実装・確認ポイント
@@ -1142,7 +1172,8 @@ feat: add structured logging and global exception handlers
 
 ## 認証認可導入チェックリスト
 - [x] Step 24: users テーブルとパスワード管理基盤
-- [ ] Step 25: ログイン API と認証状態管理
-- [ ] Step 26: 認可と認証必須 API 化
-- [ ] Step 27: 監査ログ
-- [ ] Step 28: 構造化ログと例外ハンドリング統一
+- [x] Step 25: ログイン API と認証状態管理
+- [x] Step 26: 認可と認証必須 API 化
+- [x] Step 27: ログイン画面
+- [x] Step 28: 監査ログ
+- [x] Step 29: 構造化ログと例外ハンドリング統一

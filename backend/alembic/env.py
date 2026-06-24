@@ -4,6 +4,7 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from app.database import Base, get_database_url
+from app.models import AuditLog  # noqa: F401
 from app.models import Book  # noqa: F401
 from app.models import User  # noqa: F401
 
