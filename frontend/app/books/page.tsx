@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 
 import { BooksList } from "@/app/books/BooksList";
 import { fetchBooks } from "@/lib/api";
-import { fetchCurrentUser, isAdminUser } from "@/lib/server-auth";
+import { fetchCurrentUser } from "@/lib/server-auth";
 
 export default async function BooksPage() {
   const currentUser = await fetchCurrentUser();
@@ -13,7 +13,6 @@ export default async function BooksPage() {
   }
 
   const result = await fetchBooks();
-  const canManageBooks = isAdminUser(currentUser);
 
   if (!result.ok) {
     return (
@@ -38,22 +37,13 @@ export default async function BooksPage() {
           <h1>Book list</h1>
         </div>
         <div className="page-actions">
-          {canManageBooks ? (
-            <Link className="button-primary" href="/books/new">
-              本を登録
-            </Link>
-          ) : null}
+          <Link className="button-primary" href="/books/new">
+            本を登録
+          </Link>
         </div>
       </header>
 
-      {!canManageBooks ? (
-        <section className="status">
-          <h2>管理操作には管理者権限が必要です</h2>
-          <p>現在のログインユーザーでは管理操作を利用できません。別の管理者アカウントでログインしてください。</p>
-        </section>
-      ) : null}
-
-      <BooksList canManageBooks={canManageBooks} initialBooks={result.data} />
+      <BooksList initialBooks={result.data} />
     </main>
   );
 }

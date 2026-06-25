@@ -1,7 +1,6 @@
 import type { LoginInput, LoginResponse } from "@/types/auth";
 import type { Book, BookInput } from "@/types/book";
 
-const BROWSER_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? null;
 const SERVER_API_BASE_URL =
   process.env.INTERNAL_API_BASE_URL ??
   process.env.NEXT_PUBLIC_API_BASE_URL ??
@@ -14,10 +13,6 @@ export type ApiResult<T> =
 function getApiBaseUrl(): string {
   if (typeof window === "undefined") {
     return SERVER_API_BASE_URL;
-  }
-
-  if (BROWSER_API_BASE_URL !== null) {
-    return BROWSER_API_BASE_URL;
   }
 
   return `${window.location.protocol}//${window.location.hostname}:8000`;

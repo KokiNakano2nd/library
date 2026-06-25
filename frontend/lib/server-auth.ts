@@ -10,7 +10,6 @@ const SERVER_API_BASE_URL =
   "http://localhost:8000";
 
 const AUTH_COOKIE_NAME = "library_access_token";
-const ADMIN_ROLE = "admin";
 
 export async function fetchCurrentUser(): Promise<CurrentUser | null> {
   const cookieStore = await cookies();
@@ -37,8 +36,4 @@ export async function fetchCurrentUser(): Promise<CurrentUser | null> {
   } catch {
     return null;
   }
-}
-
-export function isAdminUser(user: CurrentUser | null): boolean {
-  return user !== null && user.role === ADMIN_ROLE;
 }

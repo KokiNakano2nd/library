@@ -19,16 +19,39 @@ type BookResponse = {
 
 test("docker compose 起動中に本の CRUD を最後まで確認できる", async ({
   page,
-  request,
+  context,
 }) => {
   await mkdir(evidenceDir, { recursive: true });
 
   const suffix = Date.now().toString();
+  const adminEmail = `step30-compose-admin-${suffix}@example.com`;
+  const adminUsername = `step30-compose-admin-${suffix}`;
+  const adminPassword = "Step30ComposePass123";
   const createdTitle = `Docker Step17 ${suffix}`;
   const updatedTitle = `Docker Step17 Updated ${suffix}`;
   const isbn = `step17-${suffix.slice(-12)}`;
 
-  await deleteBooksByIsbn(request, isbn);
+  const bootstrapResponse = await context.request.post(
+    `${apiBaseUrl}/api/admin/bootstrap`,
+    {
+      data: {
+        email: adminEmail,
+        username: adminUsername,
+        password: adminPassword,
+      },
+    },
+  );
+  expect(bootstrapResponse.status()).toBe(201);
+
+  const loginResponse = await context.request.post(`${apiBaseUrl}/api/auth/login`, {
+    data: {
+      login_id: adminEmail,
+      password: adminPassword,
+    },
+  });
+  expect(loginResponse.status()).toBe(200);
+
+  await deleteBooksByIsbn(context.request, isbn);
 
   await page.goto("/books");
   await expect(page).toHaveURL(/\/books$/);
@@ -47,10 +70,12 @@ test("docker compose 起動中に本の CRUD を最後まで確認できる", as
   await page.locator('button[type="submit"]').click();
 
   await expect(page).toHaveURL(/\/books$/);
-  await expect(page.getByRole("heading", { name: createdTitle })).toBeVisible();
+  await expect(page.getByRole("row", { name: new RegExp(createdTitle) })).toBeVisible();
   await saveEvidence(page, "02-book-created.png");
 
-  const createdBookItem = page.locator("article").filter({ hasText: createdTitle });
+  const createdBookItem = page
+    .getByRole("row")
+    .filter({ hasText: createdTitle });
   await createdBookItem.locator('a[href$="/edit"]').click();
   await expect(page).toHaveURL(/\/books\/\d+\/edit$/);
   await page.waitForLoadState("networkidle");
@@ -59,22 +84,23 @@ test("docker compose 起動中に本の CRUD を最後まで確認できる", as
   await page.locator('button[type="submit"]').click();
 
   await expect(page).toHaveURL(/\/books$/);
-  await expect(page.getByRole("heading", { name: updatedTitle })).toBeVisible();
-  await expect(page.getByRole("heading", { name: createdTitle })).toHaveCount(0);
+  await expect(page.getByRole("row", { name: new RegExp(updatedTitle) })).toBeVisible();
+  await expect(page.getByRole("row", { name: new RegExp(createdTitle) })).toHaveCount(0);
   await saveEvidence(page, "03-book-updated.png");
 
-  page.once("dialog", async (dialog) => {
-    expect(dialog.message()).toContain(updatedTitle);
-    await dialog.accept();
-  });
+  const updatedBookItem = page
+    .getByRole("row")
+    .filter({ hasText: updatedTitle });
+  await updatedBookItem.getByRole("button", { name: "削除" }).click();
+  await expect(page.getByRole("dialog")).toContainText(updatedTitle);
+  await saveEvidence(page, "04-delete-dialog.png");
+  await page.getByRole("button", { name: "削除する" }).click();
 
-  const updatedBookItem = page.locator("article").filter({ hasText: updatedTitle });
-  await updatedBookItem.getByRole("button").click();
+  await expect(page.getByRole("row", { name: new RegExp(updatedTitle) })).toHaveCount(0);
+  await expect(page.getByText(`「${updatedTitle}」を削除しました。`)).toBeVisible();
+  await saveEvidence(page, "05-book-deleted.png");
 
-  await expect(page.getByRole("heading", { name: updatedTitle })).toHaveCount(0);
-  await saveEvidence(page, "04-book-deleted.png");
-
-  await deleteBooksByIsbn(request, isbn);
+  await deleteBooksByIsbn(context.request, isbn);
 });
 
 async function saveEvidence(page: Page, fileName: string): Promise<void> {

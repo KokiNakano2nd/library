@@ -1151,6 +1151,36 @@ feat: add audit trail for book operations
 feat: add structured logging and global exception handlers
 ```
 
+## Step 30: shadcn/ui で図書一覧画面と削除確認 UI を改善
+### 目的
+一覧画面を見比べやすい表形式へ整え、削除時に対象を十分確認できる UI に変えることで、誤操作を減らす。
+### 実装・確認ポイント
+
+- `shadcn/ui` 導入に必要な frontend 依存関係と設定を追加する
+- `/books` の一覧画面を `Table` ベースへ置き換える
+- タイトル、著者名、出版年、ISBN、操作を列として表示する
+- 削除確認を `window.confirm` から `Dialog` へ置き換える
+- Dialog に削除対象タイトルを表示する
+- 削除成功後に success メッセージを表示する
+- Playwright で一覧表示、編集、Dialog 表示、削除完了を確認する
+### 学ぶこと
+
+- 既存画面へ UI ライブラリを段階的に導入する方法
+- table 構造と card 構造の使い分け
+- destructive action に対する確認 UI の設計
+- Tailwind CSS v4 と React component wrapper の基本的なつなぎ方
+### 完了条件
+
+- `/books` が表形式で表示される
+- 削除前に対象タイトル付き Dialog を表示できる
+- 削除後に対象行が消え、成功メッセージを表示できる
+- `npm run lint` `npm run build` `Playwright` が通る
+
+### コミット例
+```text
+feat: improve books list ui with shadcn table and dialog
+```
+
 ## Docker化チェックリスト
 - [x] Step 11: Docker化の前提整理
 - [x] Step 12: backend のコンテナ化
@@ -1177,3 +1207,4 @@ feat: add structured logging and global exception handlers
 - [x] Step 27: ログイン画面
 - [x] Step 28: 監査ログ
 - [x] Step 29: 構造化ログと例外ハンドリング統一
+- [x] Step 30: shadcn/ui で図書一覧画面と削除確認 UI を改善
