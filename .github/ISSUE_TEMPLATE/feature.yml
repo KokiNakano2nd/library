@@ -1,32 +1,37 @@
-name: Feature
-description: 利用者向けの機能追加や機能改善を管理する
+name: "Feature"
+description: "利用者向けの機能追加や機能改善を管理する"
 title: "[Feature] "
 labels:
-  - feature
+  - "feature"
 body:
+  - type: markdown
+    attributes:
+      value: |
+        利用者向けの機能追加や改善内容を整理するテンプレートです。
+
   - type: textarea
     id: summary
     attributes:
-      label: 概要
-      description: 何を追加・改善したいのかを簡潔に記載してください。
-      placeholder: 例: books 一覧にタイトル・著者・ISBN の検索機能を追加する
+      label: "概要"
+      description: "何を追加・改善したいのかを簡潔に記載してください。"
+      placeholder: "例: books 一覧にタイトル・著者・ISBN の検索機能を追加する"
     validations:
       required: true
 
   - type: textarea
     id: problem
     attributes:
-      label: 背景・解決したい課題
-      description: いま何が不便で、なぜこの対応が必要なのかを書いてください。
-      placeholder: 例: 本の件数が増えると一覧を目視で探すのが難しく、目的の本にたどり着きにくい
+      label: "背景・解決したい課題"
+      description: "いま何が不便で、なぜこの対応が必要なのかを書いてください。"
+      placeholder: "例: 本の件数が増えると一覧を目視で探すのが難しく、目的の本にたどり着きにくい"
     validations:
       required: true
 
   - type: textarea
     id: scope
     attributes:
-      label: 対応範囲
-      description: 今回の Issue で含める範囲を箇条書きで記載してください。
+      label: "対応範囲"
+      description: "今回の Issue で含める範囲を箇条書きで記載してください。"
       placeholder: |
         - frontend の検索フォーム追加
         - backend の検索 API 対応
@@ -37,8 +42,8 @@ body:
   - type: textarea
     id: out_of_scope
     attributes:
-      label: 今回やらないこと
-      description: あえて含めない内容を明記してください。
+      label: "今回やらないこと"
+      description: "あえて含めない内容を明記してください。"
       placeholder: |
         - ページネーションは別 Issue
         - 並び替えは別 Issue
@@ -48,8 +53,8 @@ body:
   - type: textarea
     id: specification
     attributes:
-      label: 期待する仕様
-      description: 利用者目線で、完了後にどう振る舞うべきかを書いてください。
+      label: "期待する仕様"
+      description: "利用者目線で、完了後にどう振る舞うべきかを書いてください。"
       placeholder: |
         - 検索語を入力して送信すると一致する本だけが表示される
         - タイトル、著者、ISBN を対象に部分一致で検索できる
@@ -59,8 +64,8 @@ body:
   - type: textarea
     id: implementation_notes
     attributes:
-      label: 実装メモ
-      description: 想定している実装方針、関連ファイル、懸念点があれば記載してください。
+      label: "実装メモ"
+      description: "想定している実装方針、関連ファイル、懸念点があれば記載してください。"
       placeholder: |
         - README の API 仕様更新が必要
         - frontend/lib/api.ts と backend/app/routers/books.py が主な変更点
@@ -70,10 +75,10 @@ body:
   - type: checkboxes
     id: checklist
     attributes:
-      label: 確認項目
+      label: "確認項目"
       options:
-        - label: README.md の仕様更新が必要か確認する
-        - label: ELPLANATION/EXPLANATION_STEP{番号}.md の更新を行う
-        - label: LEARNING_PROGRESS.md の更新対象を確認する
-        - label: Playwright による挙動確認を行う
-        - label: backend / frontend の関連テストを追加または更新する
+        - label: "README.md の仕様更新が必要か確認する"
+        - label: "ELPLANATION/EXPLANATION_STEP{番号}.md の更新を行う"
+        - label: "LEARNING_PROGRESS.md の更新対象を確認する"
+        - label: "Playwright による挙動確認を行う"
+        - label: "backend / frontend の関連テストを追加または更新する"
