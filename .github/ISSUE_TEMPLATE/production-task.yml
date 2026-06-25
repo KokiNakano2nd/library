@@ -1,0 +1,83 @@
+name: Production Task
+description: 本番対応、運用改善、セキュリティ、監視などの非機能タスクを管理する
+title: "[Production] "
+labels:
+  - production
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概要
+      description: どの本番対応を行うのかを簡潔に記載してください。
+      placeholder: 例: 本番環境向けに CORS 設定と Cookie 設定を環境変数化する
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: 分類
+      options:
+        - セキュリティ
+        - 運用
+        - 監視
+        - デプロイ
+        - パフォーマンス
+        - データ運用
+        - その他
+    validations:
+      required: true
+
+  - type: textarea
+    id: objective
+    attributes:
+      label: 目的
+      description: この対応で何を防ぎたいか、何を改善したいかを書いてください。
+      placeholder: 例: 開発環境向けの設定が本番に混入するリスクを減らす
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: 対応範囲
+      description: 今回の Issue で含める範囲を箇条書きで記載してください。
+      placeholder: |
+        - backend の設定クラス追加
+        - CORS origin の環境変数化
+        - Cookie Secure 属性の切り替え
+    validations:
+      required: true
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: 想定リスク・考慮事項
+      description: 変更による影響範囲、移行時の注意点、依存関係を書いてください。
+      placeholder: |
+        - local 開発環境の既存手順に影響する
+        - Docker Compose の環境変数定義も更新が必要
+    validations:
+      required: false
+
+  - type: textarea
+    id: done
+    attributes:
+      label: 完了条件
+      description: この Issue を閉じる条件を明確に記載してください。
+      placeholder: |
+        - 設定が環境変数で切り替えられる
+        - README に本番向け設定方針が反映されている
+        - テストまたは確認手順が用意されている
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 確認項目
+      options:
+        - label: README.md の仕様更新が必要か確認する
+        - label: ELPLANATION/EXPLANATION_STEP{番号}.md または関連説明ドキュメントを更新する
+        - label: ローカル開発手順と CI への影響を確認する
+        - label: テストまたは確認手順を用意する

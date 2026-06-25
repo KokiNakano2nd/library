@@ -1,0 +1,77 @@
+name: Bug
+description: 不具合や期待仕様との差分を報告・修正する
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概要
+      description: どのような不具合かを簡潔に記載してください。
+      placeholder: 例: ログイン後に /books へ遷移しても一覧が表示されない
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: できるだけ具体的な手順を順番に記載してください。
+      placeholder: |
+        1. /login を開く
+        2. 管理者アカウントでログインする
+        3. /books に遷移する
+        4. 画面にエラーが表示される
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待結果
+      description: 本来どう動くべきかを記載してください。
+      placeholder: 例: ログイン成功後に本一覧が表示される
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際の結果
+      description: 実際に何が起きたかを記載してください。
+      placeholder: 例: 401 エラーとなり、一覧が読み込まれない
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: 影響範囲
+      description: どの画面、API、利用者に影響するかを書いてください。
+      placeholder: |
+        - frontend: /login, /books
+        - backend: /api/auth/login, /api/auth/me
+        - admin ユーザーのログイン導線
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 補足情報
+      description: エラーメッセージ、ログ、証跡ファイルのパスなどがあれば記載してください。
+      placeholder: |
+        - Playwright evidence: test/evidence/stepXX-playwright/...
+        - backend log: ...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 確認項目
+      options:
+        - label: README.md の仕様との差分かどうか確認する
+        - label: 再現手順をローカルで確認する
+        - label: 必要に応じて Playwright または pytest の再現テストを追加する
