@@ -69,15 +69,16 @@
 | 27 | ログイン画面 | 完了 | 3 | 2026-06-24 | 2026-06-24 | 未作成（.git未検出） |
 | 28 | 監査ログ | 完了 | 3 | 2026-06-25 | 2026-06-25 | 未作成（.git未検出） |
 | 29 | 構造化ログと例外ハンドリング統一 | 完了 | 3 | 2026-06-25 | 2026-06-25 | 未作成（.git未検出） |
+| 30 | shadcn/ui で図書一覧画面と削除確認 UI を改善 | 完了 | 3 | 2026-06-25 | 2026-06-25 | 未作成（.git未検出） |
 
 ## 現在の学習状況
 
 | 項目 | 内容 |
 | --- | --- |
-| 現在のStep | Step 29完了 |
+| 現在のStep | Step 30完了 |
 | 次に行うこと | Step 10 の全体振り返りを行い、ここまでのデータフローとエラー切り分けを説明できる状態にする |
-| 現在の課題 | 実装自体は一巡したため、CRUD、認証、認可、監査ログ、構造化ログを通した全体説明と運用観点の整理が必要 |
-| 補足で対応したこと | Step 29 で `request_id` 付き構造化ログと統一エラーレスポンスを導入し、`401` `403` `409` `422` `500` を同じ形式で返せるようにした |
+| 現在の課題 | 実装自体は一巡したため、CRUD、認証、認可、監査ログ、構造化ログ、UI 改善を通した全体説明と運用観点の整理が必要 |
+| 補足で対応したこと | Step 30 で `shadcn/ui` ベースの `Table` と `Dialog` を導入し、図書一覧画面と削除確認 UI を改善した。加えて issue16 で図書登録画面の UX/UI を改善し、`ELPLANATION/EXPLANATION_ISSUE16.md` に記録した |
 | 最終更新日 | 2026-06-25 |
 
 ## Step別記録
@@ -1306,6 +1307,75 @@
 **次に行うこと**
 
 - Step 10 の全体振り返りとして、ここまでの CRUD、認証、認可、監査ログ、構造化ログを通した説明を整理する
+
+### Step 30: shadcn/ui で図書一覧画面と削除確認 UI を改善
+- [x] `shadcn/ui` 導入に必要な frontend 依存関係と設定を追加できる
+- [x] `/books` の一覧画面を `Table` ベースへ置き換えられる
+- [x] 削除確認を `Dialog` ベースへ変更し、対象タイトルを表示できる
+- [x] 削除成功後に success メッセージを表示できる
+- [x] `README.md` と `ELPLANATION/EXPLANATION_STEP30.md` に仕様とコード説明を反映できる
+- [x] Playwright で一覧表示、編集、削除確認、削除完了を確認できる
+
+メモ:
+
+> Step 30 では frontend に `shadcn/ui` ベースの `Table` と `Dialog` を導入し、`/books` の一覧表示を表形式へ変更した。削除確認では対象タイトルを明示し、削除成功後は success メッセージを返すようにして、誤操作しにくい UI へ寄せた。
+
+### 2026-06-25: Step 30
+
+**進めたこと**
+
+- `frontend/package.json` と `frontend/postcss.config.mjs` を更新し、Tailwind CSS v4 と `@radix-ui/react-dialog` などの依存関係を追加した
+- `frontend/components.json` `frontend/lib/utils.ts` `frontend/components/ui/*` を追加し、`shadcn/ui` ベースの最小構成を作成した
+- `frontend/app/books/BooksList.tsx` をカード一覧から table 一覧へ置き換え、削除確認 Dialog と success メッセージを追加した
+- `frontend/e2e/books-crud.spec.ts` と `frontend/e2e/docker-compose-books-crud.spec.ts` を更新し、行ベースの locator と Dialog 確認に追従させた
+- `README.md` と `ELPLANATION/EXPLANATION_STEP30.md` を更新し、画面仕様、フォルダ構成、確認コマンド、証跡パスを整理した
+
+**確認できたこと**
+
+- `npm.cmd run lint` が成功した
+- `npm.cmd run build` が成功した
+- `npx playwright test e2e/books-crud.spec.ts` が成功した
+- `test/evidence/step30-playwright` に一覧初期表示、登録後、更新後、削除確認 Dialog、削除完了後の証跡を保存できた
+- 削除確認はブラウザ標準の confirm ではなく Dialog で表示され、削除対象タイトルを画面上で確認できる
+- 削除完了後に対象行が一覧から消え、success メッセージも表示される
+
+**分からなかったこと**
+
+- ない
+
+**次に行うこと**
+
+- Step 10 の全体振り返りとして、ここまでの CRUD、認証、認可、監査ログ、構造化ログ、UI 改善を通した説明を整理する
+
+### 2026-06-25: Issue 16
+
+**進めたこと**
+
+- GitHub の `issue #16` を取得し、図書登録画面の UX/UI 改善タスクとサブタスクを確認した
+- `frontend/app/books/new/page.tsx` を更新し、上部ヒーローと入力ガイドを持つ 2 カラム構成へ変更した
+- `frontend/components/BookForm.tsx` を更新し、必須/任意の表示、補助テキスト、フィールド単位のエラー、送信中状態、成功/失敗メッセージを追加した
+- `frontend/components/ui/card.tsx` と `frontend/components/ui/input.tsx` を追加し、登録画面でも `shadcn/ui` ベースの共通 UI を使えるようにした
+- `frontend/e2e/issue16-book-form-ui.spec.ts` を追加し、desktop / mobile の画面確認と登録フロー確認を Playwright で自動化した
+- `backend/app/main.py` の CORS 設定へ `3012` origin を追加し、isolated な Playwright 実行を安定させた
+- `README.md` と `ELPLANATION/EXPLANATION_ISSUE16.md` を更新し、画面仕様、確認コマンド、証跡パスを記録した
+
+**確認できたこと**
+
+- 登録画面で「何から入力するか」を左側ガイドで先に伝えられる
+- 各入力欄に補助説明、placeholder、必須/任意表示を付けられる
+- 空白だけの著者名を送信すると、フィールド近くに独自エラーを表示できる
+- 登録成功後に一覧へ戻り、追加した本が表示される
+- mobile 幅でも 1 カラムに崩さず表示できる
+- `npm.cmd run lint`、`npm.cmd run build`、`npx playwright test e2e/issue16-book-form-ui.spec.ts` が通る
+
+**分かったこと**
+
+- `required` 属性だけではなく、空白トリム後の独自検証とフィールド単位エラーを加えると入力体験が改善する
+- Playwright の isolated run では、検証用 origin を増やしておくと既存プロセスと切り分けやすい
+
+**次に行うこと**
+
+- Step 10 の全体振り返りを進めつつ、issue16 の変更をコミット単位として整理する
 
 ### Step 19: backend の CI 導入
 - [x] `.github/workflows/backend-ci.yml` を追加できる

@@ -1,9 +1,10 @@
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
+import { resolveEvidenceDir } from "./support/evidence";
 
-const apiBaseUrl = "http://127.0.0.1:8000";
-const evidenceDir = path.resolve("../test/evidence/step9-playwright");
+const apiBaseUrl = process.env.PLAYWRIGHT_API_BASE_URL ?? "http://127.0.0.1:8000";
+const evidenceDir = resolveEvidenceDir("../test/evidence/step30-playwright");
 
 type BookResponse = {
   id: number;
@@ -15,17 +16,44 @@ type BookResponse = {
   updated_at: string;
 };
 
-test("画面から本を登録、編集、削除できる", async ({ page, request }) => {
+test("画面から本を登録、編集、削除できる", async ({
+  page,
+  context,
+}) => {
   await mkdir(evidenceDir, { recursive: true });
 
   const suffix = Date.now().toString();
-  const createdTitle = `Playwright Step9 ${suffix}`;
-  const updatedTitle = `Playwright Step9 Updated ${suffix}`;
-  const isbn = `pw9-${suffix.slice(-12)}`;
+  const adminEmail = `step30-admin-${suffix}@example.com`;
+  const adminUsername = `step30-admin-${suffix}`;
+  const adminPassword = "Step30Pass123";
+  const createdTitle = `Playwright Step30 ${suffix}`;
+  const updatedTitle = `Playwright Step30 Updated ${suffix}`;
+  const isbn = `pw30-${suffix.slice(-12)}`;
 
-  await deleteBooksByIsbn(request, isbn);
+  const bootstrapResponse = await context.request.post(
+    `${apiBaseUrl}/api/admin/bootstrap`,
+    {
+      data: {
+        email: adminEmail,
+        username: adminUsername,
+        password: adminPassword,
+      },
+    },
+  );
+  expect(bootstrapResponse.status()).toBe(201);
+
+  const loginResponse = await context.request.post(`${apiBaseUrl}/api/auth/login`, {
+    data: {
+      login_id: adminEmail,
+      password: adminPassword,
+    },
+  });
+  expect(loginResponse.status()).toBe(200);
+
+  await deleteBooksByIsbn(context.request, isbn);
 
   await page.goto("/books");
+  await expect(page).toHaveURL(/\/books$/);
   await saveEvidence(page, "01-books-initial.png");
 
   await page.getByRole("link", { name: "本を登録" }).click();
@@ -39,10 +67,12 @@ test("画面から本を登録、編集、削除できる", async ({ page, reque
 
   await expect(page).toHaveURL(/\/books$/);
   await expect(page.getByRole("heading", { name: "Book list" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: createdTitle })).toBeVisible();
+  await expect(page.getByRole("row", { name: new RegExp(createdTitle) })).toBeVisible();
   await saveEvidence(page, "02-book-created.png");
 
-  const createdBookItem = page.locator("article").filter({ hasText: createdTitle });
+  const createdBookItem = page
+    .getByRole("row")
+    .filter({ hasText: createdTitle });
   await createdBookItem.getByRole("link", { name: "編集" }).click();
   await expect(page).toHaveURL(/\/books\/\d+\/edit$/);
 
@@ -50,22 +80,23 @@ test("画面から本を登録、編集、削除できる", async ({ page, reque
   await page.getByRole("button", { name: "更新する" }).click();
 
   await expect(page).toHaveURL(/\/books$/);
-  await expect(page.getByRole("heading", { name: updatedTitle })).toBeVisible();
-  await expect(page.getByRole("heading", { name: createdTitle })).toHaveCount(0);
+  await expect(page.getByRole("row", { name: new RegExp(updatedTitle) })).toBeVisible();
+  await expect(page.getByRole("row", { name: new RegExp(createdTitle) })).toHaveCount(0);
   await saveEvidence(page, "03-book-updated.png");
 
-  page.once("dialog", async (dialog) => {
-    expect(dialog.message()).toContain(updatedTitle);
-    await dialog.accept();
-  });
-
-  const updatedBookItem = page.locator("article").filter({ hasText: updatedTitle });
+  const updatedBookItem = page
+    .getByRole("row")
+    .filter({ hasText: updatedTitle });
   await updatedBookItem.getByRole("button", { name: "削除" }).click();
+  await expect(page.getByRole("dialog")).toContainText(updatedTitle);
+  await saveEvidence(page, "04-delete-dialog.png");
+  await page.getByRole("button", { name: "削除する" }).click();
 
-  await expect(page.getByRole("heading", { name: updatedTitle })).toHaveCount(0);
-  await saveEvidence(page, "04-book-deleted.png");
+  await expect(page.getByRole("row", { name: new RegExp(updatedTitle) })).toHaveCount(0);
+  await expect(page.getByText(`「${updatedTitle}」を削除しました。`)).toBeVisible();
+  await saveEvidence(page, "05-book-deleted.png");
 
-  await deleteBooksByIsbn(request, isbn);
+  await deleteBooksByIsbn(context.request, isbn);
 });
 
 async function saveEvidence(page: Page, fileName: string): Promise<void> {
