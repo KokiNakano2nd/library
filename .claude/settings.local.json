@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(docker compose *)",
+      "PowerShell(gh auth status)",
+      "Bash(gh issue *)",
+      "Bash(xargs cat)",
+      "Bash(.venv/Scripts/python.exe -m pytest tests/test_books_api.py -v --tb=short)",
+      "PowerShell(wsl --list --verbose 2>&1)",
+      "Bash(wsl -d Ubuntu -- bash -c \"which bwrap 2>/dev/null && echo 'bwrap OK' || echo 'bwrap NOT found'; which socat 2>/dev/null && echo 'socat OK' || echo 'socat NOT found'; which claude 2>/dev/null && echo 'claude OK' || echo 'claude NOT found'\")",
+      "Bash(wsl -d Ubuntu -- bash -c \"sudo apt-get update -qq && sudo apt-get install -y bubblewrap socat 2>&1 | tail -5\")",
+      "Bash(wsl -d Ubuntu -- bash -c \"node --version 2>/dev/null || echo 'node NOT found'\")",
+      "Bash(wsl -d Ubuntu -- bash -c \"which bwrap && which socat && echo 'Both installed'\")",
+      "Bash(wsl -d Ubuntu -- sudo apt-get install -y bubblewrap socat)",
+      "PowerShell(wsl -d Ubuntu -- sudo -n true 2>&1)",
+      "PowerShell(if \\($?\\) { \"passwordless sudo: OK\" } else { \"sudo requires password\" })"
+    ]
+  }
+}

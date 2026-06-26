@@ -1181,6 +1181,73 @@ feat: add structured logging and global exception handlers
 feat: improve books list ui with shadcn table and dialog
 ```
 
+## Step 31: 検索機能の追加（Backend）
+### 目的
+`GET /api/books` にクエリパラメータを追加し、バックエンドで本を絞り込める検索機能を実装する。
+### 実装・確認ポイント
+
+- `repositories/book.py` の `list_books` に `title` / `author` / `isbn` のフィルタ条件を追加する
+- `services/book.py` で検索パラメータを repository に受け渡す
+- `routers/books.py` でクエリパラメータを `Query(default=None)` として定義する
+- 部分一致検索に `ilike` を使う
+- 検索テストを 5 件追加する
+
+### 学ぶこと
+
+- SQLAlchemy の `ilike` による大文字小文字を区別しない部分一致検索
+- `%keyword%` による前後一致の意味
+- キーワード引数 `*` で引数順序ミスを防ぐ設計
+- AND 条件の動的な組み立て方
+- 複数条件の AND/OR 設計の判断基準
+
+### 完了条件
+
+- `?title=` `?author=` `?isbn=` で絞り込みができる
+- 複数条件を AND で組み合わせられる
+- パラメータなしで全件返る（既存動作を維持する）
+- 検索テストが通る
+
+### コミット例
+```text
+feat: add book search by title, author, isbn
+```
+
+## Step 32: 検索機能の追加（Frontend）
+### 目的
+URL の searchParams で検索条件を管理し、バックエンドの検索 API を使って図書一覧を絞り込めるようにする。
+### 実装・確認ポイント
+
+- `fetchBooks` に `title` / `author` / `isbn` のオプションパラメータを追加する
+- `URLSearchParams` でクエリ文字列を組み立てる
+- `BooksPage` で `searchParams` prop（Next.js 15+ では `Promise`）を受け取る
+- `<form method="GET" action="/books">` でフォーム送信を URL 遷移にする
+- 検索中の場合だけクリアボタンを表示する
+- `BooksList` からクライアント側フィルタを削除する
+
+### 学ぶこと
+
+- URL searchParams による状態管理と useState の使い分け
+- Next.js 15+ で `searchParams` が `Promise` になった理由と `await` の書き方
+- `<form method="GET">` のネイティブ動作（URL 遷移として扱われる）
+- `defaultValue` で現在の検索条件をフォームへ復元する方法
+- Server Component で完結する検索フォームの設計
+
+### 完了条件
+
+- 検索フォームからタイトル・著者名で絞り込みができる
+- 検索条件が URL に反映され、リロード後も保持される
+- 条件なしで全件が表示される
+- クリアボタンで検索をリセットできる
+
+### コミット例
+```text
+feat: add frontend search with url searchparams
+```
+
+## 検索機能チェックリスト
+- [x] Step 31: 検索機能の追加（Backend）
+- [x] Step 32: 検索機能の追加（Frontend）
+
 ## Docker化チェックリスト
 - [x] Step 11: Docker化の前提整理
 - [x] Step 12: backend のコンテナ化
